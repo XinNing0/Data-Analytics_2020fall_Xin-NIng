@@ -5,6 +5,9 @@ Dataset<-na.omit(CES)
 #basic information of data
 head(Dataset,30)
 summary(Dataset)
+summary(CES)
+
+
 #regression analysis to reduce some unrelated factors and get the most influencial factors
 lmfilter<-lm(CES ~.,Dataset)
 summary(lmfilter)
@@ -44,23 +47,19 @@ pr.out$scale
 #principal component loadings
 pr.out$rotation
 dim(pr.out$x)
+
 #biplots with different interpretations
 biplot(pr.out,scale=0)
 pr.out$rotation=-pr.out$rotation 
 pr.out$x=-pr.out$x
 biplot(pr.out, scale=0)
-#standard deviation of each prin- cipal component
-pr.out$sdev
-pr.var=pr.out$sdev ^2
-pr.var
-pve=pr.var/sum(pr.var)
-pve
-#PVE explained by each component, as well as the cumulative PVE
-plot(pve, xlab="Principal Component", ylab="Proportion of Variance Explained ", ylim=c(0,1), type="b")
-plot(cumsum(pve), xlab="Principal Component ", ylab=" Cumulative Proportion of Variance Explained ", ylim=c(0,1), type="b")
-a=c(1,2,8,-3) 
-cumsum (a)
 
+#Eigenvalues / Variances
+res.pca <- prcomp(Dataset, scale= TRUE)
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+#scree plot
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 50))
 
 #model1
 #Multivariable linear regression and prediction
@@ -82,7 +81,6 @@ pre<-as.data.frame(pre, fit)
 pre$y<-Dataset$CES
 head(pre)
 mean(with(pre, y> lwr & y < upr))
-#the model R^2=0.791
 #we may make some change
 yy <- predict(lm.fit, se.fit=TRUE, interval="prediction", level=0.95)$fit
 colnames(yy) <- c("fitpred", "lwrpred", "uprpred")
@@ -109,7 +107,7 @@ normalize <- function(x){
      return((x-min(x))/(max(x)-min(x)))
 }
 Data_normalize <- as.data.frame(lapply(Dataset[2:16],normalize))
-summary(Data_normalize$Housing.Burden)
+summary(Data_normalize$Unemployment)
 #after all the data change to 0-1,
 Data_normalize <- as.data.frame(cbind(Dataset$CES,Data_normalize))
 names(Data_normalize)[1] <- 'CES' 
@@ -145,7 +143,7 @@ for (i in 2:15)
   wss[i] <- sum(kmeans(data,centers=i)$withinss)
 plot(1:15, wss, type="b", xlab="Number of Clusters",ylab="Within groups sum of squares")
 #Use k-mean to perform clustering
-km <- kmeans(data, 17, nstart = 2)
+km <- kmeans(data, 3, nstart = 2)
 # a glance at the result
 print(km)
 #The purpose of clustering is to have small distances within groups and large distances between groups. 
